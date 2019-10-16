@@ -1,116 +1,180 @@
-//Array
-let wordBankArr = ["taylor","red","meredith","olivia","cats","music","dance","artist","genre","swift","groovy","pop","country","breakup","love"];
-// The word to build to match the current word  
-let guessingWordStr = "";    
-// letters in guessing word    
-let numLettersInt = 0;
-// Stores letters guessed
-let lettersGuessedArr = []; 
-//maximum attempts 
-let attemptsInt = 13;
-// Number of attempts player has left  
-let remainingAttemptsInt = 0; 
-// Alert to tell if the game has started     
-let gameStartedBoo = false;   
-// Alert for 'press any key to try again'     
-let hasFinishedBoo = false; 
-let correctOrBlanksArr = [];
-let wrongGuessArr = [];
-// How many wins has the player has total           
-let winsInt = 0;    
-let lossCounter = 0;
+var giantObject = {
 
-// startGame()
-// (Note: It's not being run here. It's just being made for future use.)
-function startGame() {
-    // Reset the guesses back to 0.
-    attemptsInt = 13;
+    wordBankArr:["taylor","red","meredith","olivia","cats","music","dance","artist","genre"],
+    guessingWordStr: null, //undefined 
+    lettersOfWord: [], // Stores letters guessed 
+    correctOrBlanksArr: [],
+    lettersGuessedArr: [], 
+    remainingAttemptsInt: 0,
+    attemptsInt: 0, //maximum attempts //
+    letterGuessed: null,      //undefined 
+    wins: 0,    
+// numLettersInt: 0,   // letters in guessing word
 
-    guessingWordStr = wordBankArr[Math.floor(Math.random() * wordBankArr.length)];
-    //split word into letters
-    lettersInGuessedArr = guessingWordStr.split("");
-    //number of letters per word
-    numLettersInt = lettersInGuessedArr.length;
-  
-    // We print the solution in console (for testing).
-    console.log(guessingWordStr);
-
+startGame: function() {
+    wordBankArr=["taylor","red","meredith","olivia","cats","music","dance","artist","genre"]
+    objKeys = Object.keys(this.wordBankArr);
+    this.guessingWordStr = [Math.floor(Math.random() * objKeys.length)];
+    //split word into letter
+    //this.lettersOfWord = this.guessingWordStr.split("");
+    //this.lettersOfWord = this.guessingWordStr;
  //*reset* the guess, success array each round.
-    correctOrBlanksArr = [];
-//*reset* the wrong guesses from the previous round.
-    wrongGuessArr = [];
-//  // Fill up the blanksAndSuccesses list with appropriate number of blanks.
-//  // This is based on number of letters in solution.
-  for (var i = 0; i < numLettersInt; i++) {
-    correctOrBlanksArr.push("_");
-  }
-console.log(correctOrBlanksArr);
+    this.refreshWord();
+    this.processUpdateTotalGuesses();
+    //console.log(objKeys);
+    //console.log(this.wordBankArr);
+    console.log(this.guessingWordStr);
+    console.log(this.lettersOfWord); //works
+    console.log(this.lettersGuessedArr); //works 
+    console.log(this.correctOrBlanksArr);
+    console.log(this.remainingAttemptsInt);
+    console.log(this.attemptsInt);
+    console.log(this.lettersGuessed);
+    console.log(this.wins);
+},
 
-// Reprints the guessesLeft to 9
-document.getElementById("remainingAttempts").innerHTML = remainingAttemptsInt;
-
-//  // Prints the blanks at the beginning of each round in the HTML
-document.getElementById("guessingWord").innerHTML = correctOrBlanksArr.join(" ");
-
-//  // Clears the wrong guesses from the previous round
-document.getElementById("lettersGuessed").innerHTML = wrongGuessArr.join(" ");
-}
-
-
-function checkLetters(letter) {
-
-//     // This boolean will be toggled based on whether or not a user letter is found anywhere in the word.
-     let letterInWordBoo = false;
-    
-     for(let i=0; i<numLettersInt; i++) {
-         if (guessingWordStr[i] === letter) {
-             letterInWordBoo = true;
-        }
+updatePage: function(letter) {
+    // If the user has no guesses left, restart the game.
+    if (this.remainingAttemptsInt === 0) {
+      this.newGame();
     }
-    if (letterInWordBoo) {
-        for(let j = 0; j < numLettersInt; j++) {
-            if (guessingWordStr[j] === letter) {
-                correctOrBlanksArr[j] = letter;
-                            }
-            }
-    console.log(correctOrBlanksArr);
+    // Otherwise...
+    else {
+      // Check for and handle incorrect guesses.
+      this.updateGuesses(letter);
+
+      // Check for and handle correct guesses.
+      this.updateMatchedLetters(letter);
+
+      // Rebuild the view of the word. Guessed letters are revealed, non-guessed letters have a "_".
+      this.refreshWord();
+
+      // If the user wins, restart the game.
+      if (this.updateWins() === true) {
+          this.newGame();
+      }
+  }
+},
+
+// ==================================
+
+updateGuesses: function(letter) {
+    // If the letter is not in the guessedLetters array, and the letter is not in the lettersOfTheWord array..
+    if ((this.lettersGuessedArr.indexOf(letter) === -1) && (this.lettersOfWord.indexOf(letter) === -1)) {
+
+    // Add the letter to the guessedLetters array.
+     this.lettersGuessedArr.push(letter);
+
+     this.remainingAttemptsInt--; //decreasing the total guesses by one
+
+     document.querySelector("#lettersGuessed").innerHTML = 
+     this.lettersGuessedArr.join(", ");
+    }
+},
+
+// ==================================
+
+processUpdateTotalGuesses: function() {
+// The user will get more guesses the longer the word is.
+this.attemptsInt = this.lettersOfWord.length + 5;
+this.remainingAttemptsInt = this.attemptsInt;
+
+console.log(this.remainingAttemptsInt);
+},
+
+// ==================================
+
+updateMatchedLetters: function(letter) {
+    // Loop through the letters of the "solution".
+  for (var i = 0; i < this.lettersOfWord.length; i++) {
+        // If the guessed letter is in the solution, and we haven't guessed it already..
+      if ((letter === this.lettersOfWord[i]) && (this.correctOrBlanksArr.indexOf(letter) === -1)) {
+        // Push the newly guessed letter into the matchedLetters array.
+      this.correctOrBlanksArr.push(letter);
+   //   document.querySelector("#guessingWord").innerHTML = this.correctOrBlanksArr;
+     }
+   }
+ },
+
+ // ==================================
+
+ refreshWord: function() {
+    // We start with an empty string.
+    let newWord = "";
+
+    // Loop through the letters of the word we are trying to guess..
+    for (var i = 0; i < this.guessingWordStr.length; i++) {
+      // If the current letter has been guessed, display that letter.
+      if (this.correctOrBlanksArr.indexOf(this.lettersOfWord[i]) !== -1) {
+        newWord += this.guessingWordStr[i];
+      }
+      // If it hasn't been guessed, display a "_" instead.
+      else {
+        newWord += "&nbsp;_&nbsp;";
+      }
+    }
+    // Update the page with the new string we built.
+    document.querySelector("#guessingWord").innerHTML = newWord;
+    console.log(newWord);
+  },
+
+// ==================================
+
+  newGame: function() {
+    document.querySelector("#lettersGuessed").innerHTML = "";
+    this.guessingWordStr = null;
+    this.lettersOfWord = [];
+    this.correctOrBlanksArr = [];
+    this.lettersGuessedArr = [];
+    this.remainingAttemptsInt = 0;
+    this.attemptsInt = 0;
+    this.lettersGuessed = null;
+    this.startGame();
+    this.refreshWord();
+  },
+
+// ==================================
+
+  updateWins: function() {
+    var win;
+    if (this.correctOrBlanksArr.length === 0) {
+      win = false;
     }
     else {
-        wrongGuessArr.push(letter)
-        remainingAttemptsInt--;
-    }
-    console.log(wrongGuessArr);
-}
-
-function nextRound(){
-    document.getElementById("guessingWord").innerHTML = correctOrBlanksArr.join(" ");
-    // print wrong guesses
-    document.getElementById("lettersGuessed").innerHTML = wrongGuessArr.join(" ");
-   
-    if(lettersGuessedArr.toString()=== correctOrBlanksArr.toString()) {
-        winsInt++;
-        alert("You win!");
+      win = true;
     }
 
-    else if (numLettersInt === 0) {
-        lossCounter++;
-        alert("You lose");
-
-        document.getElementById("loss-counter").innerHTML = lossCounter;
-        startGame();
+    // If a letter appears in the lettersOfTheWord array, but not in the matchedLetters array, set win to false.
+    // In English, if you haven't yet guessed all the letters in the word, you don't win yet.
+    for (var i = 0; i < this.lettersOfWord.length; i++) {
+      if (this.correctOrBlanksArr.indexOf(this.lettersOfWord[i]) === -1) {
+        win = false;
+      }
     }
-}
-startGame();
+    if (win) {
+
+        this.wins = this.wins + 1;
+
+        document.querySelector("#ttlwins").innerHTML = this.wins;
+  
+      return true;
+    }
+      return false;
+    }
+};
+
+// ==================================
+
+giantObject.startGame();
 
 // Then initiate the function for capturing key clicks.
 document.onkeyup = function(event) {
   // Check if the key pressed is a letter.
   if (event.keyCode >= 65 && event.keyCode <= 90) {
     // Converts all key clicks to lowercase letters.
-    var letterGuessed = event.key.toLowerCase();
+    giantObject.letterGuessed = event.key.toLowerCase();
     // Runs the code to check for correctness.
-    checkLetters(letterGuessed);
+    giantObject.updatePage(giantObject.letterGuessed);
     // Runs the code after each round is done.
-    nextRound();
   }
 };
